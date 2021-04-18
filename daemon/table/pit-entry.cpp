@@ -47,6 +47,18 @@ Entry::canMatch(const Interest& interest, size_t nEqualNameComps) const
   /// \todo #3162 match Link field
 }
 
+bool
+Entry::canMatchWFunction(const Interest& interest, size_t nEqualNameComps) const
+{
+  BOOST_ASSERT(m_interest->getNameFunction()->compare(0, nEqualNameComps,
+                                             *(interest.getNameFunction()), 0, nEqualNameComps) == 0);
+
+  return m_interest->getNameFunction()->compare(nEqualNameComps, Name::npos,
+                                       *(interest.getNameFunction()), nEqualNameComps) == 0 &&
+         m_interest->getSelectors() == interest.getSelectors();
+  /// \todo #3162 match Link field
+}
+
 InRecordCollection::iterator
 Entry::getInRecord(const Face& face)
 {
@@ -65,8 +77,8 @@ Entry::insertOrUpdateInRecord(Face& face, const Interest& interest)
     m_inRecords.emplace_front(face);
     it = m_inRecords.begin();
   }
-  it->setSequenceNumber(m_inRecords.size());
-  std::cout << "inRecord SequenceNumber for " <<interest.getName() << "= "  << it->getSequenceNumber()  <<"FaceId: " << face.getId()<< std::endl;
+//  it->setSequenceNumber(m_inRecords.size());
+//  std::cout << "inRecord SequenceNumber for " <<interest.getName() << "= "  << it->getSequenceNumber()  <<"FaceId: " << face.getId()<< std::endl;
   it->update(interest);
   return it;
 }
@@ -105,8 +117,8 @@ Entry::insertOrUpdateOutRecord(Face& face, const Interest& interest)
     m_outRecords.emplace_front(face);
     it = m_outRecords.begin();
   }
-  it->setSequenceNumber(m_outRecords.size());
-  std::cout << "outRecord SequenceNumber for " << interest.getName() << "= "  << it->getSequenceNumber() <<"FaceId: " << face.getId() << std::endl;
+//  it->setSequenceNumber(m_outRecords.size());
+//  std::cout << "outRecord SequenceNumber for " << interest.getName() << "= "  << it->getSequenceNumber() <<"FaceId: " << face.getId() << std::endl;
   it->update(interest);
   return it;
 }

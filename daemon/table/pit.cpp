@@ -44,17 +44,27 @@ std::pair<shared_ptr<Entry>, bool>
 Pit::findOrInsert(const Interest& interest, bool allowInsert)
 {
   // determine which NameTree entry should the PIT entry be attached onto
-  const Name& name = interest.getName();
-  bool isEndWithDigest = name.size() > 0 && name[-1].isImplicitSha256Digest();
-  const Name& nteName = isEndWithDigest ? name.getPrefix(-1) : name;
+  // const Name& name = interest.getName();
+  // bool isEndWithDigest = name.size() > 0 && name[-1].isImplicitSha256Digest();
+  // Name& nteName = isEndWithDigest ? name.getPrefix(-1) : name;
+
+  // include FunctionName as a part of lookup name (nakazato)
+  // const Function& func = interst.getFunction();
+  // for (auto p = func.begin(); p != func.end(); ++p)
+  // {
+  //  nteName.append(*p);
+  // }
+  unique_ptr<Name> name_p = interest.getNameFunction();
 
   // ensure NameTree entry exists
   name_tree::Entry* nte = nullptr;
   if (allowInsert) {
-    nte = &m_nameTree.lookup(nteName, true);
+  //  nte = &m_nameTree.lookup(nteName, true);
+    nte = &m_nameTree.lookup(*name_p, true);
   }
   else {
-    nte = m_nameTree.findExactMatch(nteName);
+  //  nte = m_nameTree.findExactMatch(nteName);
+    nte = m_nameTree.findExactMatch(*name_p);
     if (nte == nullptr) {
       return {nullptr, true};
     }
@@ -67,7 +77,7 @@ Pit::findOrInsert(const Interest& interest, bool allowInsert)
     [&interest, nteNameLen] (const shared_ptr<Entry>& entry) {
       // initial part of name is guaranteed to be equal by NameTree
       // check implicit digest (or its absence) only
-      return entry->canMatch(interest, nteNameLen);
+      return entry->canMatchWFunction(interest, nteNameLen); // nakazato
     });
   if (it != pitEntries.end()) {
     return {*it, false};
@@ -87,7 +97,7 @@ Pit::findOrInsert(const Interest& interest, bool allowInsert)
 DataMatchResult
 Pit::findAllDataMatches(const Data& data) const
 {
-  auto&& ntMatches = m_nameTree.findAllMatches(data.getName(), &nteHasPitEntries);
+  auto&& ntMatches = m_nameTree.findAllMatches(*(data.getNameFunction()), &nteHasPitEntries);
 
   DataMatchResult matches;
   for (const name_tree::Entry& nte : ntMatches) {

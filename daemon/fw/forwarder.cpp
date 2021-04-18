@@ -81,7 +81,7 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
 {
   // receive Interest
   NFD_LOG_DEBUG("onIncomingInterest face=" << inFace.getId() <<
-                " interest=" << interest.getName());
+                " interest=" << *(interest.getNameFunction()));
     interest.setTag(make_shared<lp::IncomingFaceIdTag>(inFace.getId()));
     ++m_counters.nInInterests;
 
@@ -169,7 +169,7 @@ void
 Forwarder::onContentStoreMiss(const Face& inFace, const shared_ptr<pit::Entry>& pitEntry,
                               const Interest& interest)
 {
-  NFD_LOG_DEBUG("onContentStoreMiss interest=" << interest.getName());
+  NFD_LOG_DEBUG("onContentStoreMiss interest=" << *(interest.getNameFunction()));
   ++m_counters.nCsMisses;
 
   // insert in-record
@@ -202,7 +202,7 @@ void
 Forwarder::onContentStoreHit(const Face& inFace, const shared_ptr<pit::Entry>& pitEntry,
                              const Interest& interest, const Data& data)
 {
-  NFD_LOG_DEBUG("onContentStoreHit interest=" << interest.getName());
+  NFD_LOG_DEBUG("onContentStoreHit interest=" << *(interest.getNameFunction()));
   ++m_counters.nCsHits;
 
   data.setTag(make_shared<lp::IncomingFaceIdTag>(face::FACEID_CONTENT_STORE));
@@ -221,7 +221,7 @@ void
 Forwarder::onOutgoingInterest(const shared_ptr<pit::Entry>& pitEntry, Face& outFace, const Interest& interest)
 {
   NFD_LOG_DEBUG("onOutgoingInterest face=" << outFace.getId() <<
-                " interest=" << pitEntry->getName());
+                " interest=" << *(pitEntry->getNameFunction()));
 
   // insert out-record
   pitEntry->insertOrUpdateOutRecord(outFace, interest);
@@ -239,7 +239,7 @@ Forwarder::onInterestReject(const shared_ptr<pit::Entry>& pitEntry)
                   " cannot reject forwarded Interest");
     return;
   }
-  NFD_LOG_DEBUG("onInterestReject interest=" << pitEntry->getName());
+  NFD_LOG_DEBUG("onInterestReject interest=" << *(pitEntry->getNameFunction()));
 
   // cancel unsatisfy & straggler timer
   this->cancelUnsatisfyAndStragglerTimer(*pitEntry);
@@ -251,7 +251,7 @@ Forwarder::onInterestReject(const shared_ptr<pit::Entry>& pitEntry)
 void
 Forwarder::onInterestUnsatisfied(const shared_ptr<pit::Entry>& pitEntry)
 {
-  NFD_LOG_DEBUG("onInterestUnsatisfied interest=" << pitEntry->getName());
+  NFD_LOG_DEBUG("onInterestUnsatisfied interest=" << *(pitEntry->getNameFunction()));
 
   // invoke PIT unsatisfied callback
   this->dispatchToStrategy(*pitEntry,
@@ -265,7 +265,7 @@ void
 Forwarder::onInterestFinalize(const shared_ptr<pit::Entry>& pitEntry, bool isSatisfied,
                               ndn::optional<time::milliseconds> dataFreshnessPeriod)
 {
-  NFD_LOG_DEBUG("onInterestFinalize interest=" << pitEntry->getName() <<
+  NFD_LOG_DEBUG("onInterestFinalize interest=" << *(pitEntry->getNameFunction()) <<
                 (isSatisfied ? " satisfied" : " unsatisfied"));
 
   // Dead Nonce List insert if necessary
@@ -280,7 +280,7 @@ void
 Forwarder::onIncomingData(Face& inFace, const Data& data)
 {
   // receive Data
-  NFD_LOG_DEBUG("onIncomingData face=" << inFace.getId() << " data=" << data.getName());
+  NFD_LOG_DEBUG("onIncomingData face=" << inFace.getId() << " data=" << *(data.getNameFunction()));
   data.setTag(make_shared<lp::IncomingFaceIdTag>(inFace.getId()));
   ++m_counters.nInData;
 
@@ -303,46 +303,46 @@ Forwarder::onIncomingData(Face& inFace, const Data& data)
   }
 
   // CS insert
-  std::string prefix;
-  for(int i = 0; i < int(data.getName().size()) - 2; i++)
-  {
-    prefix.append("/");
-    prefix.append(data.getName().get(i).toUri());
-  }
-  if(prefix == "/test/producer/content"){
-    m_cs.insert(data);
-  }
+//  std::string prefix;
+//  for(int i = 0; i < int(data.getName().size()) - 2; i++)
+//  {
+//    prefix.append("/");
+//    prefix.append(data.getName().get(i).toUri());
+//  }
+//  if(prefix == "/test/producer/content"){
+  m_cs.insert(data);
+//  }
 
   std::set<Face*> pendingDownstreams;
-  bool pitSatisfyFlag = true;
+//  bool pitSatisfyFlag = true;
   // foreach PitEntry
   auto now = time::steady_clock::now();
   for (const shared_ptr<pit::Entry>& pitEntry : pitMatches) {
-    NFD_LOG_DEBUG("onIncomingData matching=" << pitEntry->getName());
+    NFD_LOG_DEBUG("onIncomingData matching=" << *(pitEntry->getNameFunction()));
     // cancel unsatisfy & straggler timer
-      this->cancelUnsatisfyAndStragglerTimer(*pitEntry);
+    this->cancelUnsatisfyAndStragglerTimer(*pitEntry);
 
-      uint32_t max = 1;
-      Face* savedFace;
-      for(const pit::InRecord& inRecord : pitEntry->getInRecords()) {
-        if(inRecord.getSequenceNumber() > max){
-          max = inRecord.getSequenceNumber();
-          savedFace = &inRecord.getFace();
-        }
-      }
-      if(max >1){
-      pendingDownstreams.insert(savedFace);
-      pitEntry->deleteInRecord(*savedFace);
-      pitSatisfyFlag = false;
-      }
-      else{
+//      uint32_t max = 1;
+//      Face* savedFace;
+//      for(const pit::InRecord& inRecord : pitEntry->getInRecords()) {
+//        if(inRecord.getSequenceNumber() > max){
+//          max = inRecord.getSequenceNumber();
+//          savedFace = &inRecord.getFace();
+//        }
+//      }
+//      if(max >1){
+//      pendingDownstreams.insert(savedFace);
+//      pitEntry->deleteInRecord(*savedFace);
+//      pitSatisfyFlag = false;
+//      }
+//      else{
     // remember pending downstreams
-      for (const pit::InRecord& inRecord : pitEntry->getInRecords()) {
-        if (inRecord.getExpiry() > now) {
-          pendingDownstreams.insert(&inRecord.getFace());
-        }
+    for (const pit::InRecord& inRecord : pitEntry->getInRecords()) {
+      if (inRecord.getExpiry() > now) {
+        pendingDownstreams.insert(&inRecord.getFace());
       }
     }
+//    }
     // invoke PIT satisfy callback
     this->dispatchToStrategy(*pitEntry,
       [&] (fw::Strategy& strategy) { strategy.beforeSatisfyInterest(pitEntry, inFace, data); });
@@ -351,10 +351,10 @@ Forwarder::onIncomingData(Face& inFace, const Data& data)
     this->insertDeadNonceList(*pitEntry, true, data.getFreshnessPeriod(), &inFace);
 
     // mark PIT satisfied
-    if(pitSatisfyFlag){
+//    if(pitSatisfyFlag){
       pitEntry->clearInRecords();
       pitEntry->deleteOutRecord(inFace);
-    }
+//    }
     // set PIT straggler timer
     this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());
 }
@@ -389,10 +389,10 @@ void
 Forwarder::onOutgoingData(const Data& data, Face& outFace)
 {
   if (outFace.getId() == face::INVALID_FACEID) {
-    NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
+    NFD_LOG_WARN("onOutgoingData face=invalid data=" << *(data.getNameFunction()));
     return;
   }
-  NFD_LOG_DEBUG("onOutgoingData face=" << outFace.getId() << " data=" << data.getName());
+  NFD_LOG_DEBUG("onOutgoingData face=" << outFace.getId() << " data=" << *(data.getNameFunction()));
 
   // /localhost scope control
   bool isViolatingLocalhost = outFace.getScope() == ndn::nfd::FACE_SCOPE_NON_LOCAL &&
@@ -414,7 +414,7 @@ Forwarder::onOutgoingData(const Data& data, Face& outFace)
 void
 Forwarder::onOutgoingData(const Name& name, const Data& data, Face& outFace)
 {
-  shared_ptr<Data> m_data;
+/*  shared_ptr<Data> m_data;
   if(data.hasFunction()){
     m_data = make_shared<Data>(name);
     m_data->setFunction(data.getFunction());
@@ -435,15 +435,15 @@ Forwarder::onOutgoingData(const Name& name, const Data& data, Face& outFace)
   if (outFace.getId() == face::INVALID_FACEID) {
     NFD_LOG_WARN("onOutgoingData face=invalid data=" << m_data->getName());
     return;
-  }
-  NFD_LOG_DEBUG("onOutgoingData face=" << outFace.getId() << " data=" << m_data->getName());
+  }*/
+  NFD_LOG_DEBUG("onOutgoingData face=" << outFace.getId() << " data=" << *(data.getNameFunction()));
 
   // /localhost scope control
   bool isViolatingLocalhost = outFace.getScope() == ndn::nfd::FACE_SCOPE_NON_LOCAL &&
-                              scope_prefix::LOCALHOST.isPrefixOf(m_data->getName());
+                              scope_prefix::LOCALHOST.isPrefixOf(data.getName());
   if (isViolatingLocalhost) {
     NFD_LOG_DEBUG("onOutgoingData face=" << outFace.getId() <<
-                  " data=" << m_data->getName() << " violates /localhost");
+                  " data=" << data.getName() << " violates /localhost");
     // (drop)
     return;
   }
@@ -451,7 +451,7 @@ Forwarder::onOutgoingData(const Name& name, const Data& data, Face& outFace)
   // TODO traffic manager
 
   // send Data
-  outFace.sendData(*m_data);
+  outFace.sendData(data);
   ++m_counters.nOutData;
 }
 

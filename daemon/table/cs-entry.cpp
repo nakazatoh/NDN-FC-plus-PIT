@@ -55,7 +55,8 @@ bool
 Entry::canSatisfy(const Interest& interest) const
 {
   BOOST_ASSERT(this->hasData());
-  if (!interest.matchesData(*m_data)) {
+//  if (!interest.matchesData(*m_data)) {
+  if (!interest.matchesDataWFunction(*m_data)) {
     return false;
   }
 

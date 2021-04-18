@@ -53,7 +53,7 @@
 #include "cs-entry-impl.hpp"
 #include <ndn-cxx/util/signal.hpp>
 #include <boost/iterator/transform_iterator.hpp>
-#include <ndn-cxx/security/key-chain.hpp>
+//#include <ndn-cxx/security/key-chain.hpp>
 
 namespace nfd {
 namespace cs {
@@ -182,7 +182,7 @@ private:
   Table m_table;
   unique_ptr<Policy> m_policy;
   ndn::util::signal::ScopedConnection m_beforeEvictConnection;
-  ndn::KeyChain m_keyChain;
+//  ndn::KeyChain m_keyChain;
 };
 
 } // namespace cs

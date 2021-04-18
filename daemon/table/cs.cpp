@@ -74,7 +74,7 @@ Cs::setPolicy(unique_ptr<Policy> policy)
 void
 Cs::insert(const Data& data, bool isUnsolicited)
 {
-  shared_ptr<Data> m_data;
+  /* shared_ptr<Data> m_data;
 
   if(!data.hasFunction()){
     m_data = make_shared<Data>(data.getName());
@@ -108,8 +108,8 @@ Cs::insert(const Data& data, bool isUnsolicited)
       m_keyChain.sign(*m_data);
     }
   }
-  
-  NFD_LOG_DEBUG("insert " << m_data->getName());
+*/  
+  NFD_LOG_DEBUG("insert " << *(data.getNameFunction()));
 
   if (m_policy->getLimit() == 0) {
     // shortcut for disabled CS
@@ -117,7 +117,7 @@ Cs::insert(const Data& data, bool isUnsolicited)
   }
 
   // recognize CachePolicy
-  shared_ptr<lp::CachePolicyTag> tag = m_data->getTag<lp::CachePolicyTag>();
+  shared_ptr<lp::CachePolicyTag> tag = data.getTag<lp::CachePolicyTag>();
   if (tag != nullptr) {
     lp::CachePolicyType policy = tag->get().getPolicy();
     if (policy == lp::CachePolicyType::NO_CACHE) {
@@ -128,7 +128,7 @@ Cs::insert(const Data& data, bool isUnsolicited)
   bool isNewEntry = false;
   iterator it;
   // use .insert because gcc46 does not support .emplace
-  std::tie(it, isNewEntry) = m_table.insert(EntryImpl(m_data->shared_from_this(), isUnsolicited));
+  std::tie(it, isNewEntry) = m_table.insert(EntryImpl(data.shared_from_this(), isUnsolicited));
   EntryImpl& entry = const_cast<EntryImpl&>(*it);
 
   entry.updateStaleTime();
@@ -154,9 +154,11 @@ Cs::find(const Interest& interest,
   BOOST_ASSERT(static_cast<bool>(hitCallback));
   BOOST_ASSERT(static_cast<bool>(missCallback));
 
-  Name funcname(interest.getFunction().toUri());
-  Name contentname(interest.getName());
-  const Name& prefix = contentname.append(funcname);
+//  Name funcname(interest.getFunction().toUri());
+//  Name contentname(interest.getName());
+//  const Name& prefix = contentname.append(funcname);
+//  Name name(*interest.getNameFunction());
+  const Name prefix(*interest.getNameFunction());
   bool isRightmost = interest.getChildSelector() == 1;
   NFD_LOG_DEBUG("find " << prefix << (isRightmost ? " R" : " L"));
 
