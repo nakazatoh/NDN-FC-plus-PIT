@@ -56,6 +56,12 @@ public: // exposed through ContentStore enumeration
     return m_data->getName();
   }
 
+  unique_ptr<Name>
+  getNameFunction() const
+  {
+    return m_data->getNameFunction();
+  }
+
   /** \return full name (including implicit digest) of the stored Data
    *  \pre hasData()
    */

@@ -15,7 +15,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "/home/nakazato/kumamoto-f3/ndn-cxx-FCv2/sudogdb",
+            "miDebuggerPath": "/home/nakazato/kumamoto-f3/NFD-FC/sudogdb",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

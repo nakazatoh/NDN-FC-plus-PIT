@@ -127,11 +127,15 @@ Cs::insert(const Data& data, bool isUnsolicited)
 
   bool isNewEntry = false;
   iterator it;
+  NFD_LOG_DEBUG("CS-size-before: " << m_table.size());
   // use .insert because gcc46 does not support .emplace
   std::tie(it, isNewEntry) = m_table.insert(EntryImpl(data.shared_from_this(), isUnsolicited));
+  NFD_LOG_DEBUG("CS-size-after: " << m_table.size());
   EntryImpl& entry = const_cast<EntryImpl&>(*it);
+  NFD_LOG_DEBUG("inserted-data: " << *(entry.getNameFunction()));
 
   entry.updateStaleTime();
+  NFD_LOG_DEBUG(" isNewEntry2 " << (isNewEntry ? "T" : "F"));
 
   if (!isNewEntry) { // existing entry
     // XXX This doesn't forbid unsolicited Data from refreshing a solicited entry.
@@ -189,6 +193,7 @@ Cs::find(const Interest& interest,
 iterator
 Cs::findLeftmost(const Interest& interest, iterator first, iterator last) const
 {
+  NFD_LOG_DEBUG("!findLeftmost! " << *(interest.getNameFunction()));
   return std::find_if(first, last, bind(&cs::EntryImpl::canSatisfy, _1, interest));
 }
 

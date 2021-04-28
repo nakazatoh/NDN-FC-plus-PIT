@@ -75,6 +75,14 @@ compareQueryWithData(const Name& queryName, const Data& data)
 }
 
 int
+compareNameFunctionQueryWithData(const Name& queryNameFunction, const Data& data)
+{
+  int cmp = queryNameFunction.compare(*(data.getNameFunction()));
+
+  return cmp;
+}
+
+int
 compareDataWithData(const Data& lhs, const Data& rhs)
 {
   int cmp = lhs.getName().compare(rhs.getName());
@@ -85,6 +93,13 @@ compareDataWithData(const Data& lhs, const Data& rhs)
   return lhs.getFullName()[-1].compare(rhs.getFullName()[-1]);
 }
 
+int
+compareNameFunctionOfDataWithData(const Data& lhs, const Data& rhs)
+{
+  int cmp = lhs.getNameFunction()->compare(*(rhs.getNameFunction()));
+  return cmp;
+}
+
 bool
 EntryImpl::operator<(const EntryImpl& other) const
 {
@@ -93,15 +108,15 @@ EntryImpl::operator<(const EntryImpl& other) const
       return m_queryName < other.m_queryName;
     }
     else {
-      return compareQueryWithData(m_queryName, other.getData()) < 0;
+      return compareNameFunctionQueryWithData(m_queryName, other.getData()) < 0;
     }
   }
   else {
     if (other.isQuery()) {
-      return compareQueryWithData(other.m_queryName, this->getData()) > 0;
+      return compareNameFunctionQueryWithData(other.m_queryName, this->getData()) > 0;
     }
     else {
-      return compareDataWithData(this->getData(), other.getData()) < 0;
+      return compareNameFunctionOfDataWithData(this->getData(), other.getData()) < 0;
     }
   }
 }
