@@ -590,7 +590,13 @@ void
 Forwarder::setStragglerTimer(const shared_ptr<pit::Entry>& pitEntry, bool isSatisfied,
                              ndn::optional<time::milliseconds> dataFreshnessPeriod)
 {
-  time::nanoseconds stragglerTime = time::milliseconds(10000000);
+  time::nanoseconds stragglerTime;
+  if (pitEntry->getInterest().hasFunction()) {
+    stragglerTime = time::milliseconds(10000000);
+  } 
+  else {
+    stragglerTime = time::milliseconds(100);
+  }
 
   scheduler::cancel(pitEntry->m_stragglerTimer);
   pitEntry->m_stragglerTimer = scheduler::schedule(stragglerTime,
